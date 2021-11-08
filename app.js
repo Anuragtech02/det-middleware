@@ -4,8 +4,8 @@ var app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// app.use(cors());
-app.options("*", cors()); // include before other routes
+app.use(cors());
+// app.options("*", cors()); // include before other routes
 
 app.get("/", function (req, res, next) {
   res.json({ msg: "This is CORS-enabled for all origins!" });
