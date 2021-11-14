@@ -5,11 +5,12 @@ const axios = require("axios");
 
 const PORT = process.env.PORT || 5000;
 
+const URI_RECEIPT = "http://164.52.218.27:7080/wfpredict/ner_sroie";
+const URI_FORM = "http://164.52.218.27:7080/wfpredict/ner_funsd";
+
 app.use(cors());
-// app.options("*", cors()); // include before other routes
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json({ limit: "50mb" }));
-// app.use(upload.array());
 
 app.get("/", function (req, res, next) {
   res.json({
@@ -17,26 +18,16 @@ app.get("/", function (req, res, next) {
   });
 });
 
-async function getResultForm(b64File) {
-  const headers = {
-    "Content-Type": "application/json",
-  };
-  return await axios.post(
-    "http://164.52.218.27:8000/wfpredict/ocr",
-    b64File.split(",")[1],
-    {
-      headers,
-    }
-  );
-}
+const headers = {
+  "Content-Type": "application/json",
+};
 
-async function getResultReceipt(b64File) {
-  const headers = {
-    "Content-Type": "application/json",
-  };
+async function getResult(b64File, type) {
   return await axios.post(
-    "http://164.52.218.27:7080/wfpredict/ocr",
-    b64File.split(",")[1],
+    type === "receipt" ? URI_RECEIPT : URI_FORM,
+    {
+      b64: b64File.split(",")[1],
+    },
     {
       headers,
     }
@@ -46,7 +37,7 @@ async function getResultReceipt(b64File) {
 app.post("/predictForm", async (req, res) => {
   const { data } = req.body;
   if (data) {
-    const result = await getResultForm(data);
+    const result = await getResult(data, "form");
 
     res.status(200).json(result.data);
   }
@@ -55,7 +46,7 @@ app.post("/predictForm", async (req, res) => {
 app.post("/predictReceipt", async (req, res) => {
   const { data } = req.body;
   if (data) {
-    const result = await getResultReceipt(data);
+    const result = await getResult(data, "receipt");
 
     res.status(200).json(result.data);
   }
